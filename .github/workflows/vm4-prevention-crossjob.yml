@@ -25,7 +25,12 @@ jobs:
       - name: Install released Mergify pytest client
         run: python -m pip install pytest==9.1.1 pytest-mergify==2026.9.11.1
       - name: Seed default-branch test identity
-        run: pytest -q -s test_shared.py
+        shell: bash
+        run: |
+          for i in $(seq 1 5); do
+            echo "baseline execution $i/5"
+            pytest -q -s test_shared.py
+          done
 
   victim_b:
     if: github.event_name == 'pull_request'
