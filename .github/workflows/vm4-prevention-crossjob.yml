@@ -1,0 +1,45 @@
+name: VM4 Prevention Crossjob Protected
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  baseline_a:
+    if: github.event_name == 'push'
+    name: VM4 baseline job A
+    runs-on: ubuntu-latest
+    env:
+      MERGIFY_TOKEN: ${{ secrets.VM4_PREVENTION_MERGIFY_TOKEN_20260916 }}
+      MERGIFY_TEST_JOB_NAME: vm4-prevention-baseline-job-a-20260916
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install released Mergify pytest client
+        run: python -m pip install pytest==9.1.1 pytest-mergify==2026.9.11.1
+      - name: Seed default-branch test identity
+        run: pytest -q -s test_shared.py
+
+  victim_b:
+    if: github.event_name == 'pull_request'
+    name: VM4 prevention job B
+    runs-on: ubuntu-latest
+    env:
+      MERGIFY_TOKEN: ${{ secrets.VM4_PREVENTION_MERGIFY_TOKEN_20260916 }}
+      MERGIFY_TEST_JOB_NAME: vm4-prevention-victim-job-b-20260916
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install released Mergify pytest client
+        run: python -m pip install pytest==9.1.1 pytest-mergify==2026.9.11.1
+      - name: Run PR Prevention gate
+        run: pytest -q -s test_shared.py
